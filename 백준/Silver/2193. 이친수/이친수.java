@@ -1,11 +1,9 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.stream.IntStream;
 
 public class Main {
 
     private static BufferedReader reader;
-
 
 
     public static void main(String[] args) throws Exception {
@@ -13,19 +11,12 @@ public class Main {
         int digits = Integer.parseInt(reader.readLine());
         reader.close();
 
-        long[][] stepNumbers = new long[digits + 1][2];
-        initializeStepNumbers(stepNumbers);
-        for (int i = 2; i < stepNumbers.length; i++) {
-            stepNumbers[i][0] = stepNumbers[i - 1][0] + stepNumbers[i - 1][1];
-            stepNumbers[i][1] = stepNumbers[i - 1][0];
+        long[] stepNumbers = new long[digits + 1];
+        stepNumbers[0] = 0;
+        stepNumbers[1] = 1;
+        for (int i = 2; i <= digits; i++) {
+            stepNumbers[i] = stepNumbers[i - 1] + stepNumbers[i - 2];
         }
-
-        System.out.println(stepNumbers[digits][1]);
-    }
-
-    private static void initializeStepNumbers(long[][] stepNumbers) {
-        for (int i = 0; i < stepNumbers[0].length; i++) {
-            stepNumbers[1][i] = 1;
-        }
+        System.out.println(stepNumbers[digits]);
     }
 }
