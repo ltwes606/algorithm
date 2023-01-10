@@ -13,7 +13,7 @@ public class Main {
         int digits = Integer.parseInt(reader.readLine());
         reader.close();
 
-        long[][] stepNumbers = new long[digits + 1][10];
+        long[][] stepNumbers = new long[digits + 1][2];
         initializeStepNumbers(stepNumbers);
         for (int i = 2; i < stepNumbers.length; i++) {
             stepNumbers[i][0] = stepNumbers[i - 1][0] + stepNumbers[i - 1][1];
