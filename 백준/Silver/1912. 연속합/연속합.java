@@ -12,19 +12,13 @@ public class Main {
                 .toArray();
         reader.close();
 
-        int[] sum = new int[numbers.length];
-        sum[0] = numbers[0];
-        for (int index = 1; index < sum.length; index++) {
-            sum[index] = numbers[index] + sum[index - 1];
-        }
+        int[] dp = new int[numbers.length];
 
-        int result = sum[0];
-        int min = sum[0] < 0 ? sum[0] : 0;
-        for (int index = 1; index < sum.length; index++) {
-            result = Math.max(result, sum[index] - min);
-            if (min > sum[index]) {
-                min = sum[index];
-            }
+        dp[0] = numbers[0];
+        int result = dp[0];
+        for (int index = 1; index < dp.length; index++) {
+            dp[index] = Math.max(dp[index - 1] + numbers[index], numbers[index]);
+            result = Math.max(result, dp[index]);
         }
 
         System.out.println(result);
