@@ -14,8 +14,7 @@ class Main {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
 
         // 초기화
-        HashMap<String, Integer> nameToOrderNumber = new HashMap<>();
-        HashMap<Integer, String> orderNumberToName = new HashMap<>();
+        HashMap<String, String> hashMap = new HashMap<>();
 
         // 입력
         int[] sizes = Arrays.stream(reader.readLine().split(" "))
@@ -23,22 +22,16 @@ class Main {
                 .toArray();
         for (int i = 1; i <= sizes[0]; i++) {
             String name = reader.readLine();
-            nameToOrderNumber.put(name, i);
-            orderNumberToName.put(i, name);
+            String iString = String.valueOf(i);
+            hashMap.put(name, iString);
+            hashMap.put(iString, name);
         }
 
         // 출력
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < sizes[1]; i++) {
-            String name = reader.readLine();
-            try {
-                Integer orderNumber = Integer.parseInt(name);
-                result.append(orderNumberToName.get(orderNumber));
-            } catch (NumberFormatException exception) {
-                result.append(nameToOrderNumber.get(name));
-            } finally {
-                result.append("\n");
-            }
+            String query = reader.readLine();
+            result.append(hashMap.get(query) + "\n");
         }
 
         // 최종 출력
