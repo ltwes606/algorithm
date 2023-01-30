@@ -39,11 +39,10 @@ class Main {
     private static void dfs(
             int currentSize, int sequenceSize, ArrayList<Integer> sequence, int[] numbers) {
         if (currentSize == sequenceSize) {
-            outputStatement.append(
-                    sequence.stream().map(Object::toString)
-                            .collect(Collectors.joining(" "))
-                            + "\n"
-            );
+            for (int i = 0; i < sequence.size(); i++) {
+                outputStatement.append(sequence.get(i) + " ");
+            }
+            outputStatement.append("\n");
             return;
         }
 
