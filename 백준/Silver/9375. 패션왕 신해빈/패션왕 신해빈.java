@@ -48,10 +48,7 @@ class Main {
             String element = tokenizer.nextToken();
             String key = tokenizer.nextToken();
 
-            if (!result.containsKey(key)) {
-                result.put(key, 0);
-            }
-            result.replace(key, result.get(key) + 1);
+            result.put(key, result.getOrDefault(key, 0) + 1);
         }
         return result;
     }
