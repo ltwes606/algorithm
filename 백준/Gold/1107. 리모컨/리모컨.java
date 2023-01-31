@@ -31,7 +31,7 @@ class Main {
         int countMoveNumber =
                 Math.abs(channelMove - movableChannel) + String.valueOf(movableChannel).length();
         int countMoveHeight = Math.abs(channelMove - DEFAULT_CHANNEL);
-        int result = countMoveNumber > countMoveHeight ? countMoveHeight : countMoveNumber;
+        int result = Math.min(countMoveNumber, countMoveHeight);
         System.out.println(result);
 
         // 종료작업
