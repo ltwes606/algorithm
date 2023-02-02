@@ -161,10 +161,6 @@ class Main {
 
         // 종료 작업
         reader.close();
-
-//        for (Tetromino tetromino : tetrominos) {
-//            System.out.println("tetromino = " + tetromino);
-//        }
     }
 
     private static int getMaxValue(int[][] matrix, int iRow, int iCol, List<Tetromino> tetrominos) {
