@@ -6,68 +6,44 @@ import java.util.stream.Collectors;
 
 class Main {
 
+    private static StringBuilder stringBuilder = new StringBuilder();
+
     public static void main(String[] args) throws IOException {
         // 입력 설정
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         // 입력
         int size = Integer.parseInt(reader.readLine());
-        int[] startSequence = new int[size];
-        for (int i = 0; i < startSequence.length; i++) {
-            startSequence[i] = i + 1;
-        }
 
-        // 오름차순으로 순차 출력
-        int[] result = startSequence;
-        while (result != null) {
-            System.out.println(Arrays.stream(result).mapToObj(String::valueOf)
-                    .collect(Collectors.joining(" ")));
+        // default false
+        boolean[] visited = new boolean[size];
+        int[] sequence = new int[size];
+        // dfs
+        dfs(sequence, visited, 0);
 
-            result = getNextPermutation(result);
-        }
+        // 출력
+        System.out.println(stringBuilder);
 
         // 종료 작업
         reader.close();
     }
 
-    private static int[] getNextPermutation(int[] permutation) {
-        // 변경할 인덱스 위치 찾기
-        for (int i = permutation.length - 1; i >= 0; i--) {
-            // 뒷 인덱스 중에 큰 값 탐색
-            if (existsBiggerThanNumber(permutation[i], permutation, i + 1)) {
-                int[] result = permutation.clone();
-                swap(result, i, findMininumIndexBiggerThan(result, result[i], i + 1));
-                Arrays.sort(result, i + 1, result.length);
-                return result;
+    private static void dfs(int[] sequence, boolean[] visited, int depth) {
+        if (depth == sequence.length) {
+            stringBuilder.append(
+                    Arrays.stream(sequence).mapToObj(String::valueOf)
+                            .collect(Collectors.joining(" "))
+                            + "\n"
+            );
+        }
+
+        for (int i = 0; i < visited.length; i++) {
+            if (!visited[i]) {
+                visited[i] = true;
+                sequence[depth] = i + 1;
+                dfs(sequence, visited, depth + 1);
+                visited[i] = false;
             }
         }
-        return null;
-    }
-
-    private static int findMininumIndexBiggerThan(int[] ints, int value, int fromIndex) {
-        int result = fromIndex;
-        int minValue = Integer.MAX_VALUE;
-        for (int i = fromIndex; i < ints.length; i++) {
-            if (value < ints[i] && ints[i] < minValue) {
-                result = i;
-                minValue = ints[i];
-            }
-        }
-        return result;
-    }
-
-    private static boolean existsBiggerThanNumber(int value, int[] ints, int fromIndex) {
-        for (int i = fromIndex; i < ints.length; i++) {
-            if (ints[i] > value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void swap(int[] x, int a, int b) {
-        int t = x[a];
-        x[a] = x[b];
-        x[b] = t;
     }
 }
