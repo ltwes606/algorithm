@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.StringTokenizer;
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
 public class Main {
@@ -14,12 +14,11 @@ public class Main {
 
         // 입력
         int size = Integer.parseInt(reader.readLine());
-        map = new int[size][size];
+        map = new int[size][];
         for (int i = 0; i < map.length; i++) {
-            StringTokenizer tokenizer = new StringTokenizer(reader.readLine());
-            for (int j = 0; j < map[i].length; j++) {
-                map[i][j] = Integer.parseInt(tokenizer.nextToken());
-            }
+            map[i] = Arrays.stream(reader.readLine().split(" "))
+                    .mapToInt(Integer::parseInt)
+                    .toArray();
         }
 
         // dfs
