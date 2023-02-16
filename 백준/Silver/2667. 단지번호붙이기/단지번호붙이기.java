@@ -62,7 +62,7 @@ public class Main {
         boolean[][] visited = new boolean[size][size];
         int maxValue = 0;
 
-        // bfs
+        // dfs
         for (int row = 0; row < result.length; row++) {
             for (int col = 0; col < result[row].length; col++) {
                 if (result[row][col] == 0 || visited[row][col] == true) {
