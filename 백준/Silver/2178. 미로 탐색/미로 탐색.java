@@ -106,6 +106,7 @@ public class Main {
     }
 
     private static void bfs(int[][] map, int[][] result) {
+        // 초기화
         Queue<Coordinates> queue = new LinkedList<>();
         queue.add(new Coordinates(0, 0));
         boolean[][] visited = new boolean[result.length][result[0].length];
@@ -116,12 +117,13 @@ public class Main {
 
             int row = coordinates.getRow();
             int col = coordinates.getCol();
-            // 최소칸
+            // 4방향 최소칸
             result[row][col] = Math.min(result[row][col], getResult(result, row - 1, col) + 1);
             result[row][col] = Math.min(result[row][col], getResult(result, row, col - 1) + 1);
             result[row][col] = Math.min(result[row][col], getResult(result, row, col + 1) + 1);
             result[row][col] = Math.min(result[row][col], getResult(result, row + 1, col) + 1);
 
+            // 4방향 큐 삽입
             enqueue(queue, map, row - 1, col, visited);
             enqueue(queue, map, row, col - 1, visited);
             enqueue(queue, map, row, col + 1, visited);
