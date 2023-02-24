@@ -143,16 +143,11 @@ public class Main {
     private static void bfs(int[][] map, ArrayList<Coordinate> startList) {
         Queue<Coordinate> queue = new LinkedList<>();
         copyList(queue, startList);
-        boolean[][] visited = new boolean[map.length][map[0].length];
 
         while (!queue.isEmpty()) {
             Coordinate coordinate = queue.remove();
             int row = coordinate.getX();
             int col = coordinate.getY();
-            if (visited[row][col] || map[row][col] == ROTTEN) {
-                continue;
-            }
-            visited[row][col] = true;
 
             // 4방향 확장
             int value = map[row][col];
