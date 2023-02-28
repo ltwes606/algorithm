@@ -154,12 +154,8 @@ public class Main {
         int parentNumber = order.get(0);
 
         for (int i = 1; i < order.size(); i++) {
-            while (nodes[parentNumber].getChildCount() == 0) {
-                try {
-                    parentNumber = parentQueue.remove();
-                } catch (NoSuchElementException exception) {
-                    return false;
-                }
+            while (!parentQueue.isEmpty() && nodes[parentNumber].getChildCount() == 0) {
+                parentNumber = parentQueue.remove();
             }
 
             int childNumber = order.get(i);
