@@ -9,136 +9,136 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
+class TokenizerReader {
+
+    private final BufferedReader reader;
+    private StringTokenizer tokenizer;
+
+    public TokenizerReader(InputStream inputStream) {
+        this.reader = new BufferedReader(new InputStreamReader(inputStream));
+    }
+
+    public String next() {
+        while (tokenizer == null || !tokenizer.hasMoreTokens()) {
+            try {
+                tokenizer = new StringTokenizer(reader.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return tokenizer.nextToken();
+    }
+
+    public Integer nextInt() {
+        return Integer.parseInt(next());
+    }
+
+    public void close() {
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class BuilderWriter {
+
+    private final BufferedWriter writer;
+    private final StringBuilder builder;
+
+    public BuilderWriter(OutputStream outputStream) {
+        this.writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+        this.builder = new StringBuilder();
+    }
+
+    public void print(String str) {
+        builder.append(str);
+    }
+
+    public void println(String str) {
+        print(str + "\n");
+    }
+
+    public void close() {
+        try {
+            writer.write(builder.toString());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        builder.delete(0, builder.length());
+    }
+}
+
+class Emoticon {
+
+    private int screenSize;
+    private int clipboardSize;
+    private int count;
+
+    public Emoticon(int screenSize, int clipboardSize, int count) {
+        this.screenSize = screenSize;
+        this.clipboardSize = clipboardSize;
+        this.count = count;
+    }
+
+    public Emoticon(Emoticon emoticon) {
+        this.screenSize = emoticon.getScreenSize();
+        this.clipboardSize = emoticon.getClipboardSize();
+        this.count = emoticon.getCount();
+    }
+
+
+    public int getScreenSize() {
+        return screenSize;
+    }
+
+    public void setScreenSize(int screenSize) {
+        this.screenSize = screenSize;
+    }
+
+    public int getClipboardSize() {
+        return clipboardSize;
+    }
+
+    public void setClipboardSize(int clipboardSize) {
+        this.clipboardSize = clipboardSize;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    private void increaseCount() {
+        count++;
+    }
+
+    public void storeClipboard() {
+        clipboardSize = screenSize;
+        increaseCount();
+    }
+
+    public void pasteScreen() {
+        if (clipboardSize == 0) {
+            return;
+        }
+
+        screenSize += clipboardSize;
+        increaseCount();
+    }
+
+    public void decreaseScreenCount() {
+        screenSize--;
+        increaseCount();
+    }
+}
+
 public class Main {
-
-    static class TokenizerReader {
-
-        private final BufferedReader reader;
-        private StringTokenizer tokenizer;
-
-        public TokenizerReader(InputStream inputStream) {
-            this.reader = new BufferedReader(new InputStreamReader(inputStream));
-        }
-
-        public String next() {
-            while (tokenizer == null || !tokenizer.hasMoreTokens()) {
-                try {
-                    tokenizer = new StringTokenizer(reader.readLine());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return tokenizer.nextToken();
-        }
-
-        public Integer nextInt() {
-            return Integer.parseInt(next());
-        }
-
-        public void close() {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    static class BuilderWriter {
-
-        private final BufferedWriter writer;
-        private final StringBuilder builder;
-
-        public BuilderWriter(OutputStream outputStream) {
-            this.writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-            this.builder = new StringBuilder();
-        }
-
-        public void print(String str) {
-            builder.append(str);
-        }
-
-        public void println(String str) {
-            print(str + "\n");
-        }
-
-        public void close() {
-            try {
-                writer.write(builder.toString());
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            builder.delete(0, builder.length());
-        }
-    }
-
-    static class Emoticon {
-
-        private int screenSize;
-        private int clipboardSize;
-        private int count;
-
-        public Emoticon(int screenSize, int clipboardSize, int count) {
-            this.screenSize = screenSize;
-            this.clipboardSize = clipboardSize;
-            this.count = count;
-        }
-
-        public Emoticon(Emoticon emoticon) {
-            this.screenSize = emoticon.getScreenSize();
-            this.clipboardSize = emoticon.getClipboardSize();
-            this.count = emoticon.getCount();
-        }
-
-
-        public int getScreenSize() {
-            return screenSize;
-        }
-
-        public void setScreenSize(int screenSize) {
-            this.screenSize = screenSize;
-        }
-
-        public int getClipboardSize() {
-            return clipboardSize;
-        }
-
-        public void setClipboardSize(int clipboardSize) {
-            this.clipboardSize = clipboardSize;
-        }
-
-        public int getCount() {
-            return count;
-        }
-
-        public void setCount(int count) {
-            this.count = count;
-        }
-
-        private void increaseCount() {
-            count++;
-        }
-
-        public void storeClipboard() {
-            clipboardSize = screenSize;
-            increaseCount();
-        }
-
-        public void pasteScreen() {
-            if (clipboardSize == 0) {
-                return;
-            }
-
-            screenSize += clipboardSize;
-            increaseCount();
-        }
-
-        public void decreaseScreenCount() {
-            screenSize--;
-            increaseCount();
-        }
-    }
 
     private static TokenizerReader reader;
     private static BuilderWriter writer;
