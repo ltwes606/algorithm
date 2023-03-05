@@ -100,6 +100,7 @@ public class Main {
     private static TokenizerReader reader;
     private static BuilderWriter writer;
 
+    private static int MAX_VALUE = 1_000 * 10_000;
     private static int MIN_VERTEX_NUMBER = 1;
 
     public static void main(String[] args) {
@@ -115,12 +116,12 @@ public class Main {
         // 초기화
         int[][] directedGraph = new int[vertexSize + 1][vertexSize + 1];
         for (int i = 0; i < directedGraph.length; i++) {
-            Arrays.fill(directedGraph[i], Integer.MAX_VALUE);
+            Arrays.fill(directedGraph[i], MAX_VALUE + 1);
             directedGraph[i][i] = 0;
         }
         int[][] reverseDirectedGraph = new int[vertexSize + 1][vertexSize + 1];
         for (int i = 0; i < reverseDirectedGraph.length; i++) {
-            Arrays.fill(reverseDirectedGraph[i], Integer.MAX_VALUE);
+            Arrays.fill(reverseDirectedGraph[i], MAX_VALUE + 1);
             reverseDirectedGraph[i][i] = 0;
         }
 
@@ -151,7 +152,7 @@ public class Main {
 
     private static int[] dijkstra(int[][] directedGraph, int startVertex) {
         int[] result = new int[directedGraph.length];
-        Arrays.fill(result, Integer.MAX_VALUE);
+        Arrays.fill(result, MAX_VALUE + 1);
         result[startVertex] = 0;
 
         PriorityQueue<Vertex> pq = new PriorityQueue<>();
@@ -166,7 +167,7 @@ public class Main {
             visited[index] = true;
 
             for (int i = 0; i < visited.length; i++) {
-                if (result[i] < (long) result[index] + (long) directedGraph[index][i]) {
+                if (result[i] < result[index] + directedGraph[index][i]) {
                     continue;
                 }
 
