@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -135,6 +136,8 @@ public class Main {
 
     public static final int MAX_VALUE = 9;
 
+    public static int ALPHABETS_COUNT = 'Z' - 'A' + 1;
+
     public static void main(String[] args) {
         // 입출력 설정
         reader = new TokenizerReader(System.in);
@@ -147,25 +150,17 @@ public class Main {
             input[i] = reader.next();
         }
 
-        // String -> char Array로 변환
-        char[][] alphabets = new char[input.length][];
-        for (int i = 0; i < alphabets.length; i++) {
-            alphabets[i] = new char[input[i].length()];
-            for (int j = 0; j < alphabets[i].length; j++) {
-                alphabets[i][j] = input[i].charAt(j);
-            }
-        }
+        char[][] strings = convertToCharArray(input);
 
-        // 높은 값이 필요한 값일수록 작은 index 존재하지 않는다면 value == 0
-        Map<Character, Integer> alphabetMap = makeAlphabetMap(alphabets);
+        int[] alphabetValues = new int[ALPHABETS_COUNT];
+        assignAlphabetValues(alphabetValues, strings);
+
+        Arrays.sort(alphabetValues);
 
         int result = 0;
-        for (char[] chars : alphabets) {
-            int value = 0;
-            for (Character c : chars) {
-                value = value * 10 + alphabetMap.getOrDefault(c, 0);
-            }
-            result += value;
+        int lastIndex = alphabetValues.length - 1;
+        for (int i = MAX_VALUE; i >= 0; i--) {
+            result += i * alphabetValues[(lastIndex - (MAX_VALUE - i))];
         }
 
         writer.println(String.valueOf(result));
@@ -175,40 +170,26 @@ public class Main {
         writer.close();
     }
 
-    private static Map<Character, Integer> makeAlphabetMap(char[][] alphabets) {
-        Set<Character> characters = new HashSet<>();
-        for (char[] chars : alphabets) {
+    private static void assignAlphabetValues(int[] destinationArray, char[][] strings) {
+        for (char[] chars : strings) {
+            int charsLen = chars.length;
+            int digit = (int) Math.pow(10, charsLen - 1);
+
             for (Character c : chars) {
-                characters.add(c);
+                destinationArray[c.charValue() - 'A'] += digit;
+                digit /= 10;
             }
         }
+    }
 
-        Map<Character, Integer> values = new HashMap<>();
-        for (Character character : characters) {
-            values.put(character, 0);
-        }
+    private static char[][] convertToCharArray(String[] strings) {
+        char[][] result = new char[strings.length][];
 
-        for (char[] chars : alphabets) {
-            int value = 1;
-            for (int i = chars.length - 1; i >= 0; i--) {
-                char c = chars[i];
-                values.replace(c, values.get(c) + value);
-                value *= 10;
+        for (int i = 0; i < result.length; i++) {
+            result[i] = new char[strings[i].length()];
+            for (int j = 0; j < result[i].length; j++) {
+                result[i][j] = strings[i].charAt(j);
             }
-        }
-
-        // 작은 인덱스에 속한 값일수록 큰 숫자를 요구함
-        List<Character> list = new ArrayList<>(characters);
-        Collections.sort(list, new Comparator<Character>() {
-            @Override
-            public int compare(Character c1, Character c2) {
-                return values.get(c2) - values.get(c1);
-            }
-        });
-
-        Map<Character, Integer> result = new HashMap<>();
-        for (int value = MAX_VALUE; value > 0 && MAX_VALUE - value < list.size(); value--) {
-            result.put(list.get(MAX_VALUE - value), value);
         }
         return result;
     }
