@@ -101,6 +101,7 @@ public class Main {
     }
 
     static class Coin extends Point {
+
         private int prevX;
         private int prevY;
 
@@ -120,16 +121,8 @@ public class Main {
             return prevX;
         }
 
-        public void setPrevX(int prevX) {
-            this.prevX = prevX;
-        }
-
         public int getPrevY() {
             return prevY;
-        }
-
-        public void setPrevY(int prevY) {
-            this.prevY = prevY;
         }
     }
 
