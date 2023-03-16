@@ -109,7 +109,7 @@ public class Main {
         // 빈 칸 찾기
         List<Coordinates> coordinatesList = getBlanks(sudoku);
 
-        // dfs
+        // 빈 칸 채우기
         boolean[][][] checkedSquares = getCheckedSquares(sudoku);
         boolean[][] checkedRows = getCheckedRows(sudoku);
         boolean[][] checkedCols = getCheckedCols(sudoku);
