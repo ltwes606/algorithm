@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -78,9 +77,9 @@ public class Main {
         private final int row;
         private final int col;
 
-        public Coordinates(int x, int y) {
-            this.row = x;
-            this.col = y;
+        public Coordinates(int row, int col) {
+            this.row = row;
+            this.col = col;
         }
 
         public int getRow() {
@@ -111,41 +110,17 @@ public class Main {
         }
     }
 
-    static class PairTile {
-
-        private final Tile firstTile;
-        private final Tile secondTile;
-
-        public PairTile(Tile firstTile, Tile secondTile) {
-            this.firstTile = firstTile;
-            this.secondTile = secondTile;
-        }
-
-        public Tile getFirstTile() {
-            return firstTile;
-        }
-
-        public Tile getSecondTile() {
-            return secondTile;
-        }
-    }
-
     private static TokenizerReader reader;
     private static BuilderWriter writer;
+
+    public static final int MIN_NUMBER = 1;
+    public static final int MAX_NUMBER = 9;
+
     public static final int SUDOKU_SIZE = 9;
     public static final int SUDOKU_SIZE_SQRT = (int) Math.sqrt(SUDOKU_SIZE);
 
-    public static final int MIN_NUMBER = 1;
-    public static final int MAX_NUMBER = SUDOKU_SIZE;
-
-    public static final int MIN_ROW = 1;
-    public static final int MIN_COL = 1;
-
-    private static boolean[][] usedPairs = new boolean[MAX_NUMBER + 1][MAX_NUMBER + 1];
-
     private static Coordinates[] DIRECTS = new Coordinates[]{
-            new Coordinates(-1, 0), new Coordinates(0, 1),
-            new Coordinates(1, 0), new Coordinates(0, -1)
+            new Coordinates(0, 1), new Coordinates(1, 0)
     };
 
     public static void main(String[] args) {
@@ -153,401 +128,261 @@ public class Main {
         reader = new TokenizerReader(System.in);
         writer = new BuilderWriter(System.out);
 
-        List<int[][]> result = new ArrayList<>();
+        List<int[][]> results = new ArrayList<>();
         while (true) {
-            int pairTileSize = reader.nextInt();
-            if (pairTileSize == 0) {
+            int size = reader.nextInt();
+            if (size == 0) {
                 break;
             }
 
-            initializeUsedPairs();
+            // 입력
+            List<Tile[]> tilePairs = getTilePairs(size);
+            List<Tile> tiles = getTiles(MIN_NUMBER, MAX_NUMBER);
 
-            List<PairTile> pairTiles = getPairTiles(pairTileSize);
-            List<Tile> fixedTiles = getFixedTiles();
+            // sudoku board 채우기
+            int[][] sudokuBoard = getSudokuBoard(tilePairs, tiles);
+            List<Coordinates> unvisited = getUnvisitedCoordinates(sudokuBoard);
+            boolean[][] visitedTilePairs = new boolean[MAX_NUMBER + 1][MAX_NUMBER + 1];
+            visit(visitedTilePairs, tilePairs);
 
-            int[][] sudoku = getSudoku(fixedTiles);
+            boolean[][] visitedRows = new boolean[SUDOKU_SIZE][MAX_NUMBER + 1];
+            visitRows(visitedRows, sudokuBoard);
+            boolean[][] visitedCols = new boolean[SUDOKU_SIZE][MAX_NUMBER + 1];
+            visitCols(visitedCols, sudokuBoard);
+            boolean[][][] visitedSquares =
+                    new boolean[SUDOKU_SIZE_SQRT][SUDOKU_SIZE_SQRT][MAX_NUMBER + 1];
+            visitSquares(visitedSquares, sudokuBoard);
 
-            // 빈 칸 채우기
-            boolean[][] checkedRows = getCheckedRows(sudoku);
-            boolean[][] checkedCols = getCheckedCols(sudoku);
-            boolean[][][] checkedSquares = getCheckedSquares(sudoku);
+            dfs(sudokuBoard, unvisited, 0,
+                    visitedTilePairs, visitedRows, visitedCols, visitedSquares);
 
-            // 빈 칸 찾기
-            List<Coordinates> blanks = getBlanks(fixedTiles, pairTiles);
-
-            dfs(sudoku, pairTiles, 0, checkedRows, checkedCols, checkedSquares, blanks);
-
-            result.add(sudoku);
+            results.add(sudokuBoard);
         }
 
-        // 결과 출력
-        printResults(result);
+        printResults(results);
 
         // 종료 작업
         reader.close();
         writer.close();
     }
 
-    private static List<PairTile> getPairTiles(int pairTileSize) {
-        List<PairTile> pairTiles = new ArrayList<>();
-        for (int i = 0; i < pairTileSize; i++) {
-            Tile firstTile = getTile();
-            Tile secondTile = getTile();
+    private static List<Tile[]> getTilePairs(int size) {
+        List<Tile[]> tilePairs = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            int number1 = reader.nextInt();
+            String location1 = reader.next();
+            Coordinates coordinates1 = new Coordinates(
+                    getRowOfLocation(location1), getColOfLocation(location1));
+            Tile tile1 = new Tile(coordinates1, number1);
 
-            PairTile pairTile = new PairTile(firstTile, secondTile);
-            pairTiles.add(pairTile);
+            int number2 = reader.nextInt();
+            String location2 = reader.next();
+            Coordinates coordinates2 = new Coordinates(
+                    getRowOfLocation(location2), getColOfLocation(location2));
+            Tile tile2 = new Tile(coordinates2, number2);
 
-            usedPairs[firstTile.getNumber()][secondTile.getNumber()] = true;
-            usedPairs[secondTile.getNumber()][firstTile.getNumber()] = true;
+            tilePairs.add(new Tile[]{tile1, tile2});
         }
-        return pairTiles;
-    }
-
-    private static Tile getTile() {
-        int number = reader.nextInt();
-        String location = reader.next();
-
-        int row = getRowOfLocation(location);
-        int col = getColOfLocation(location);
-        Coordinates coordinates = new Coordinates(row, col);
-
-        Tile tile = new Tile(coordinates, number);
-        return tile;
+        return tilePairs;
     }
 
     private static int getRowOfLocation(String location) {
-        return location.charAt(0) - 'A' + 1;
+        return location.charAt(0) - 'A';
     }
 
     private static int getColOfLocation(String location) {
-        return location.charAt(1) - '0';
+        return location.charAt(1) - '1';
     }
 
-    private static List<Tile> getFixedTiles() {
-        List<Tile> fixedTiles = new ArrayList<>();
-        for (int n = MIN_NUMBER; n <= MAX_NUMBER; n++) {
-            String location = reader.next();
-
-            int row = getRowOfLocation(location);
-            int col = getColOfLocation(location);
-            Coordinates coordinates = new Coordinates(row, col);
-
-            Tile tile = new Tile(coordinates, n);
-            fixedTiles.add(tile);
-        }
-        return fixedTiles;
-    }
-
-    private static int[][] getSudoku(List<Tile> tiles) {
-        int[][] sudoku = new int[SUDOKU_SIZE + MIN_ROW][SUDOKU_SIZE + MIN_COL];
-        for (Tile tile : tiles) {
-            Coordinates coordinates = tile.getCoordinates();
-
-            sudoku[coordinates.getRow()][coordinates.getCol()] = tile.getNumber();
-        }
-        return sudoku;
-    }
-
-    private static void initializeUsedPairs() {
-        for (int i = 0; i < usedPairs.length; i++) {
-            Arrays.fill(usedPairs[i], false);
-        }
-    }
-
-    private static List<Coordinates> getBlanks(List<Tile> tiles, List<PairTile> pairTiles) {
-        boolean[][] checked = new boolean[SUDOKU_SIZE + MIN_ROW][SUDOKU_SIZE + MIN_COL];
-
-        checkCoordinates(checked, tiles);
-
-        checkCoordinates(checked, getTiles(pairTiles));
-
-        List<Coordinates> blanks = new ArrayList<>();
-        for (int iRow = MIN_ROW; iRow < checked.length; iRow++) {
-            for (int iCol = MIN_COL; iCol < checked[iRow].length; iCol++) {
-                if (!checked[iRow][iCol]) {
-                    blanks.add(new Coordinates(iRow, iCol));
-                }
-            }
-        }
-        return blanks;
-    }
-
-    private static void checkCoordinates(boolean[][] checked, List<Tile> tiles) {
-        for (Tile tile : tiles) {
-            Coordinates coordinates = tile.getCoordinates();
-            int row = coordinates.getRow();
-            int col = coordinates.getCol();
-
-            checked[row][col] = true;
-        }
-    }
-
-    private static List<Tile> getTiles(List<PairTile> pairTiles) {
+    private static List<Tile> getTiles(int minNumber, int maxNumber) {
         List<Tile> tiles = new ArrayList<>();
-        for (PairTile pairTile : pairTiles) {
-            tiles.add(pairTile.getFirstTile());
-            tiles.add(pairTile.getSecondTile());
+        for (int n = minNumber; n <= maxNumber; n++) {
+            String location = reader.next();
+            Coordinates coordinates = new Coordinates(
+                    getRowOfLocation(location), getColOfLocation(location));
+
+            tiles.add(new Tile(coordinates, n));
         }
         return tiles;
     }
 
-    private static boolean[][] getCheckedRows(int[][] sudoku) {
-        boolean[][] result = new boolean[SUDOKU_SIZE + MIN_ROW][MAX_NUMBER + 1];
 
-        for (int iRow = MIN_ROW; iRow < sudoku.length; iRow++) {
-            for (int iCol = MIN_COL; iCol < sudoku[iRow].length; iCol++) {
-                int n = sudoku[iRow][iCol];
-                result[iRow][n] = true;
+    private static int[][] getSudokuBoard(List<Tile[]> tilePairs, List<Tile> tiles) {
+        int[][] sudokuBoard = new int[SUDOKU_SIZE][SUDOKU_SIZE];
+
+        fillSudokuBoardWith(sudokuBoard, getTiles(tilePairs));
+        fillSudokuBoardWith(sudokuBoard, tiles);
+
+        return sudokuBoard;
+    }
+
+    private static List<Tile> getTiles(List<Tile[]> tilePairs) {
+        List<Tile> result = new ArrayList<>();
+        for (Tile[] tiles : tilePairs) {
+            for (Tile tile : tiles) {
+                result.add(tile);
             }
         }
         return result;
     }
 
-    private static boolean[][] getCheckedCols(int[][] sudoku) {
-        boolean[][] result = new boolean[SUDOKU_SIZE + MIN_COL][MAX_NUMBER + 1];
+    private static void fillSudokuBoardWith(int[][] sudokuBoard, List<Tile> tiles) {
+        for (Tile tile : tiles) {
+            Coordinates coordinates = tile.getCoordinates();
+            sudokuBoard[coordinates.getRow()][coordinates.getCol()] = tile.getNumber();
+        }
+    }
 
-        for (int iRow = MIN_ROW; iRow < sudoku.length; iRow++) {
-            for (int iCol = MIN_COL; iCol < sudoku[iRow].length; iCol++) {
-                int n = sudoku[iRow][iCol];
-                result[iCol][n] = true;
+    private static List<Coordinates> getUnvisitedCoordinates(int[][] sudokuBoard) {
+        List<Coordinates> unvisited = new ArrayList<>();
+        for (int iRow = 0; iRow < SUDOKU_SIZE; iRow++) {
+            for (int iCol = 0; iCol < SUDOKU_SIZE; iCol++) {
+                if (sudokuBoard[iRow][iCol] != 0) {
+                    continue;
+                }
+                unvisited.add(new Coordinates(iRow, iCol));
             }
         }
-        return result;
+        return unvisited;
     }
 
-    private static boolean[][][] getCheckedSquares(int[][] sudoku) {
-        boolean[][][] result = new boolean[SUDOKU_SIZE_SQRT][SUDOKU_SIZE_SQRT][MAX_NUMBER + 1];
+    private static void visit(boolean[][] visitedTilePairs, List<Tile[]> tilePairs) {
+        for (Tile[] tilePair : tilePairs) {
+            int n1 = tilePair[0].getNumber();
+            int n2 = tilePair[1].getNumber();
 
-        for (int iRow = 0; iRow < sudoku.length; iRow++) {
-            for (int iCol = 0; iCol < sudoku[iRow].length; iCol++) {
-                int n = sudoku[iRow][iCol];
-                int sqrtRow = getSqrtRow(iRow);
-                int sqrtCol = getSqrtCol(iCol);
-                result[sqrtRow][sqrtCol][n] = true;
+            visitedTilePairs[n1][n2] = true;
+            visitedTilePairs[n2][n1] = true;
+        }
+        for (int i = 0; i < visitedTilePairs.length; i++) {
+            visitedTilePairs[i][i] = true;
+        }
+    }
+
+    private static void visitRows(boolean[][] visitedRows, int[][] sudokuBoard) {
+        for (int iRow = 0; iRow < SUDOKU_SIZE; iRow++) {
+            for (int iCol = 0; iCol < SUDOKU_SIZE; iCol++) {
+                int n = sudokuBoard[iRow][iCol];
+
+                visitedRows[iRow][n] = true;
             }
         }
-        return result;
     }
 
-    private static int getSqrtRow(int row) {
-        return (row - MIN_ROW) / SUDOKU_SIZE_SQRT;
+    private static void visitCols(boolean[][] visitedCols, int[][] sudokuBoard) {
+        for (int iRow = 0; iRow < SUDOKU_SIZE; iRow++) {
+            for (int iCol = 0; iCol < SUDOKU_SIZE; iCol++) {
+                int n = sudokuBoard[iRow][iCol];
+
+                visitedCols[iCol][n] = true;
+            }
+        }
     }
 
-    private static int getSqrtCol(int col) {
-        return (col - MIN_COL) / SUDOKU_SIZE_SQRT;
+    private static void visitSquares(boolean[][][] visitedSquares, int[][] sudokuBoard) {
+        for (int iRow = 0; iRow < SUDOKU_SIZE; iRow++) {
+            for (int iCol = 0; iCol < SUDOKU_SIZE; iCol++) {
+                int squareRow = getSquareRow(iRow);
+                int squareCol = getSquareCol(iCol);
+                int n = sudokuBoard[iRow][iCol];
+
+                visitedSquares[squareRow][squareCol][n] = true;
+            }
+        }
     }
 
-    private static boolean dfs(int[][] sudoku, List<PairTile> pairTiles, int listIndex,
-            boolean[][] checkedRows, boolean[][] checkedCols, boolean[][][] checkedSquares,
-            List<Coordinates> blanks) {
-        if (pairTiles.size() == listIndex) {
-            if (dfs(sudoku, blanks, 0, checkedRows, checkedCols, checkedSquares)) {
+    private static int getSquareRow(int row) {
+        return row / SUDOKU_SIZE_SQRT;
+    }
+
+    private static int getSquareCol(int col) {
+        return col / SUDOKU_SIZE_SQRT;
+    }
+
+
+    private static boolean dfs(int[][] sudokuBoard, List<Coordinates> unvisited, int unvisitedIndex,
+            boolean[][] visitedTilePairs, boolean[][] visitedRows, boolean[][] visitedCols,
+            boolean[][][] visitedSquares) {
+        if (unvisited.size() == unvisitedIndex) {
+            return true;
+        }
+
+        Coordinates coordinates1 = unvisited.get(unvisitedIndex);
+        int row1 = coordinates1.getRow();
+        int col1 = coordinates1.getCol();
+        if (sudokuBoard[row1][col1] != 0) {
+            if (dfs(sudokuBoard, unvisited, unvisitedIndex + 1,
+                    visitedTilePairs, visitedRows, visitedCols, visitedSquares)) {
                 return true;
             }
             return false;
         }
 
-        PairTile pairTile = pairTiles.get(listIndex);
-        Tile firstTile = pairTile.getFirstTile();
-        Tile secondTile = pairTile.getSecondTile();
-
-        Coordinates firstCoordinates = firstTile.getCoordinates();
-        int firstNumber = firstTile.getNumber();
-        Coordinates secondCoordinates = secondTile.getCoordinates();
-        int secondNumber = secondTile.getNumber();
-
-        if (isBlank(firstCoordinates, firstNumber, checkedRows, checkedCols, checkedSquares)
-                && isBlank(secondCoordinates, secondNumber,
-                checkedRows, checkedCols, checkedSquares)) {
-            check(checkedRows, firstCoordinates.getRow(), firstNumber);
-            check(checkedCols, firstCoordinates.getCol(), firstNumber);
-            check(checkedSquares, getSqrtRow(firstCoordinates.getRow()),
-                    getSqrtCol(firstCoordinates.getCol()), firstNumber);
-
-            check(checkedRows, secondCoordinates.getRow(), secondNumber);
-            check(checkedCols, secondCoordinates.getCol(), secondNumber);
-            check(checkedSquares, getSqrtRow(secondCoordinates.getRow()),
-                    getSqrtCol(secondCoordinates.getCol()), secondNumber);
-
-            sudoku[firstCoordinates.getRow()][firstCoordinates.getCol()] = firstNumber;
-            sudoku[secondCoordinates.getRow()][secondCoordinates.getCol()] = secondNumber;
-
-            if (dfs(sudoku, pairTiles, listIndex + 1,
-                    checkedRows, checkedCols, checkedSquares, blanks)) {
-                return true;
-            }
-
-            uncheck(checkedRows, firstCoordinates.getRow(), firstNumber);
-            uncheck(checkedCols, firstCoordinates.getCol(), firstNumber);
-            uncheck(checkedSquares, getSqrtRow(firstCoordinates.getRow()),
-                    getSqrtCol(firstCoordinates.getCol()), firstNumber);
-
-            uncheck(checkedRows, secondCoordinates.getRow(), secondNumber);
-            uncheck(checkedCols, secondCoordinates.getCol(), secondNumber);
-            uncheck(checkedSquares, getSqrtRow(secondCoordinates.getRow()),
-                    getSqrtCol(secondCoordinates.getCol()), secondNumber);
-
-            sudoku[firstCoordinates.getRow()][firstCoordinates.getCol()] = 0;
-            sudoku[secondCoordinates.getRow()][secondCoordinates.getCol()] = 0;
-        }
-
-        if (isBlank(firstCoordinates, secondNumber, checkedRows, checkedCols, checkedSquares)
-                && isBlank(secondCoordinates, firstNumber,
-                checkedRows, checkedCols, checkedSquares)) {
-            check(checkedRows, firstCoordinates.getRow(), secondNumber);
-            check(checkedCols, firstCoordinates.getCol(), secondNumber);
-            check(checkedSquares, getSqrtRow(firstCoordinates.getRow()),
-                    getSqrtCol(firstCoordinates.getCol()), secondNumber);
-
-            check(checkedRows, secondCoordinates.getRow(), firstNumber);
-            check(checkedCols, secondCoordinates.getCol(), firstNumber);
-            check(checkedSquares, getSqrtRow(secondCoordinates.getRow()),
-                    getSqrtCol(secondCoordinates.getCol()), firstNumber);
-
-            sudoku[firstCoordinates.getRow()][firstCoordinates.getCol()] = secondNumber;
-            sudoku[secondCoordinates.getRow()][secondCoordinates.getCol()] = firstNumber;
-
-            if (dfs(sudoku, pairTiles, listIndex + 1,
-                    checkedRows, checkedCols, checkedSquares, blanks)) {
-                return true;
-            }
-
-            uncheck(checkedRows, firstCoordinates.getRow(), secondNumber);
-            uncheck(checkedCols, firstCoordinates.getCol(), secondNumber);
-            uncheck(checkedSquares, getSqrtRow(firstCoordinates.getRow()),
-                    getSqrtCol(firstCoordinates.getCol()), secondNumber);
-
-            uncheck(checkedRows, secondCoordinates.getRow(), firstNumber);
-            uncheck(checkedCols, secondCoordinates.getCol(), firstNumber);
-            uncheck(checkedSquares, getSqrtRow(secondCoordinates.getRow()),
-                    getSqrtCol(secondCoordinates.getCol()), firstNumber);
-        }
-
-        sudoku[firstCoordinates.getRow()][firstCoordinates.getCol()] = 0;
-        sudoku[secondCoordinates.getRow()][secondCoordinates.getCol()] = 0;
-
-        return false;
-    }
-
-    private static boolean isBlank(Coordinates coordinates, int number,
-            boolean[][] checkedRows, boolean[][] checkedCols, boolean[][][] checkedSquares) {
-        int row = coordinates.getRow();
-        int col = coordinates.getCol();
-        int sqrtRow = getSqrtRow(row);
-        int sqrtCol = getSqrtCol(col);
-
-        if (!checkedRows[row][number] && !checkedCols[col][number]
-                && !checkedSquares[sqrtRow][sqrtCol][number]) {
-            return true;
-        }
-        return false;
-    }
-
-    private static void check(boolean[][] checked, int index, int number) {
-        checked[index][number] = true;
-    }
-
-    private static void check(boolean[][][] checked, int row, int col, int number) {
-        checked[row][col][number] = true;
-    }
-
-    private static void uncheck(boolean[][] checked, int index, int number) {
-        checked[index][number] = false;
-    }
-
-    private static void uncheck(boolean[][][] checked, int row, int col, int number) {
-        checked[row][col][number] = false;
-    }
-
-    private static boolean dfs(int[][] sudoku, List<Coordinates> list, int listIndex,
-            boolean[][] checkedRows, boolean[][] checkedCols, boolean[][][] checkedSquares) {
-        if (list.size() == listIndex) {
-            return true;
-        }
-
-        Coordinates coordinates = list.get(listIndex);
-        int row = coordinates.getRow();
-        int col = coordinates.getCol();
-        int squareRow = getSqrtRow(row);
-        int squareCol = getSqrtCol(col);
-
-        if (sudoku[row][col] != 0) {
-            if (dfs(sudoku, list, listIndex + 1, checkedRows, checkedCols, checkedSquares)) {
-                return true;
-            }
-            return false;
-        }
-
-        for (int number1 = MIN_NUMBER; number1 <= MAX_NUMBER; number1++) {
-            if (checkedRows[row][number1]
-                    || checkedCols[col][number1]
-                    || checkedSquares[squareRow][squareCol][number1]) {
+        int squareRow1 = getSquareRow(row1);
+        int squareCol1 = getSquareCol(col1);
+        for (int n1 = MIN_NUMBER; n1 <= MAX_NUMBER; n1++) {
+            if (visitedRows[row1][n1] || visitedCols[col1][n1]
+                    || visitedSquares[squareRow1][squareCol1][n1]) {
                 continue;
             }
 
+            visitedRows[row1][n1] = true;
+            visitedCols[col1][n1] = true;
+            visitedSquares[squareRow1][squareCol1][n1] = true;
+            sudokuBoard[row1][col1] = n1;
+
             for (Coordinates direct : DIRECTS) {
-                int number2Row = row + direct.getRow();
-                int number2Col = col + direct.getCol();
-                if (!validRange(sudoku, number2Row, number2Col)
-                        || sudoku[number2Row][number2Col] != 0) {
+                int row2 = row1 + direct.getRow();
+                int col2 = col1 + direct.getCol();
+                if (!validRange(sudokuBoard, row2, col2)
+                        || sudokuBoard[row2][col2] != 0) {
                     continue;
                 }
 
-                for (int number2 = MIN_NUMBER; number2 < usedPairs[number1].length; number2++) {
-                    int number2SqrtRow = getSqrtRow(number2Row);
-                    int number2SqrtCol = getSqrtRow(number2Col);
-
-                    if (checkedRows[number2Row][number2]
-                            || checkedCols[number2Col][number2]
-                            || checkedSquares[number2SqrtRow][number2SqrtCol][number2]) {
-                        continue;
-                    }
-                    if (usedPairs[number1][number2]
-                            || number1 == number2) {
+                int squareRow2 = getSquareRow(row2);
+                int squareCol2 = getSquareCol(col2);
+                for (int n2 = MIN_NUMBER; n2 <= MAX_NUMBER; n2++) {
+                    if (visitedTilePairs[n1][n2] || visitedRows[row2][n2] || visitedCols[col2][n2]
+                            || visitedSquares[squareRow2][squareCol2][n2]) {
                         continue;
                     }
 
-                    usedPairs[number1][number2] = true;
-                    usedPairs[number2][number1] = true;
+                    visitedTilePairs[n1][n2] = true;
+                    visitedTilePairs[n2][n1] = true;
 
-                    checkedRows[row][number1] = true;
-                    checkedCols[col][number1] = true;
-                    checkedSquares[squareRow][squareCol][number1] = true;
-                    sudoku[row][col] = number1;
+                    visitedRows[row2][n2] = true;
+                    visitedCols[col2][n2] = true;
+                    visitedSquares[squareRow2][squareCol2][n2] = true;
+                    sudokuBoard[row2][col2] = n2;
 
-                    checkedRows[number2Row][number2] = true;
-                    checkedCols[number2Col][number2] = true;
-                    checkedSquares[getSqrtRow(number2Row)][getSqrtCol(number2Col)][number2] = true;
-                    sudoku[number2Row][number2Col] = number2;
-
-                    if (dfs(sudoku, list, listIndex + 1, checkedRows, checkedCols,
-                            checkedSquares)) {
+                    if (dfs(sudokuBoard, unvisited, unvisitedIndex + 1,
+                            visitedTilePairs, visitedRows, visitedCols, visitedSquares)) {
                         return true;
                     }
 
-                    checkedRows[row][number1] = false;
-                    checkedCols[col][number1] = false;
-                    checkedSquares[squareRow][squareCol][number1] = false;
-                    sudoku[row][col] = 0;
+                    visitedTilePairs[n1][n2] = false;
+                    visitedTilePairs[n2][n1] = false;
 
-                    checkedRows[number2Row][number2] = false;
-                    checkedCols[number2Col][number2] = false;
-                    checkedSquares[number2SqrtRow][number2SqrtCol][number2] = false;
-                    sudoku[number2Row][number2Col] = 0;
-
-                    usedPairs[number1][number2] = false;
-                    usedPairs[number2][number1] = false;
+                    visitedRows[row2][n2] = false;
+                    visitedCols[col2][n2] = false;
+                    visitedSquares[squareRow2][squareCol2][n2] = false;
+                    sudokuBoard[row2][col2] = 0;
                 }
             }
+
+            visitedRows[row1][n1] = false;
+            visitedCols[col1][n1] = false;
+            visitedSquares[squareRow1][squareCol1][n1] = false;
+            sudokuBoard[row1][col1] = 0;
         }
         return false;
     }
 
-    private static boolean validRange(int[][] sudoku, int row, int col) {
-        if (row < 0 || sudoku.length <= row) {
+    private static boolean validRange(int[][] sudokuBoard, int row, int col) {
+        if (row < 0 || sudokuBoard.length <= row) {
             return false;
         }
-        if (col < 0 || sudoku.length <= col) {
+        if (col < 0 || sudokuBoard[row].length <= col) {
             return false;
         }
         return true;
@@ -561,8 +396,8 @@ public class Main {
     }
 
     private static void printSudoku(int[][] sudoku) {
-        for (int iRow = MIN_ROW; iRow < sudoku.length; iRow++) {
-            for (int iCol = MIN_COL; iCol < sudoku[iRow].length; iCol++) {
+        for (int iRow = 0; iRow < SUDOKU_SIZE; iRow++) {
+            for (int iCol = 0; iCol < SUDOKU_SIZE; iCol++) {
                 writer.print(String.valueOf(sudoku[iRow][iCol]));
             }
             writer.println("");
