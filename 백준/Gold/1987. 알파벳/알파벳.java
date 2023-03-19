@@ -114,7 +114,7 @@ public class Main {
 
         // 최대 칸 수 구하기
         Coordinates startCoordinates = new Coordinates(0, 0);
-        int result = dfs(map, startCoordinates, 0);
+        int result = dfs(map, 0, 0, 0);
 
         // 결과 출력
         printResult(result);
@@ -135,9 +135,7 @@ public class Main {
         return map;
     }
 
-    private static int dfs(char[][] map, Coordinates currentCoordinates, int count) {
-        int row = currentCoordinates.getRow();
-        int col = currentCoordinates.getCol();
+    private static int dfs(char[][] map, int row, int col, int count) {
         char c = map[row][col];
         if (containsVisited(c)) {
             return count;
@@ -153,7 +151,7 @@ public class Main {
             }
 
             Coordinates nextCoordinate = new Coordinates(nextRow, nextCol);
-            result = Math.max(result, dfs(map, nextCoordinate, count + 1));
+            result = Math.max(result, dfs(map, nextRow, nextCol, count + 1));
         }
         removeVisited(c);
         return result;
