@@ -99,6 +99,8 @@ public class Main {
             new Coordinates(1, 0), new Coordinates(0, -1)
     };
 
+    private static boolean[] visited = new boolean['Z' - 'A' + 1];
+
     public static void main(String[] args) {
         // 입출력 설정
         reader = new TokenizerReader(System.in);
@@ -112,7 +114,7 @@ public class Main {
 
         // 최대 칸 수 구하기
         Coordinates startCoordinates = new Coordinates(0, 0);
-        int result = dfs(map, startCoordinates, new HashSet<>());
+        int result = dfs(map, startCoordinates, 0);
 
         // 결과 출력
         printResult(result);
@@ -133,16 +135,16 @@ public class Main {
         return map;
     }
 
-    private static int dfs(char[][] map, Coordinates currentCoordinates, Set<Character> visited) {
+    private static int dfs(char[][] map, Coordinates currentCoordinates, int count) {
         int row = currentCoordinates.getRow();
         int col = currentCoordinates.getCol();
-        Character character = map[row][col];
-        if (visited.contains(character)) {
-            return visited.size();
+        char c = map[row][col];
+        if (containsVisited(c)) {
+            return count;
         }
-        visited.add(character);
+        addVisited(c);
 
-        int result = visited.size();
+        int result = count;
         for (Coordinates direct : DIRECTS) {
             int nextRow = row + direct.getRow();
             int nextCol = col + direct.getCol();
@@ -151,10 +153,22 @@ public class Main {
             }
 
             Coordinates nextCoordinate = new Coordinates(nextRow, nextCol);
-            result = Math.max(result, dfs(map, nextCoordinate, visited));
+            result = Math.max(result, dfs(map, nextCoordinate, count + 1));
         }
-        visited.remove(character);
+        removeVisited(c);
         return result;
+    }
+
+    private static boolean containsVisited(char c) {
+        return visited[c - 'A'];
+    }
+
+    private static void addVisited(char c) {
+        visited[c - 'A'] = true;
+    }
+
+    private static void removeVisited(char c) {
+        visited[c - 'A'] = false;
     }
 
     private static boolean validRange(char[][] map, int row, int col) {
