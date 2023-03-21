@@ -250,7 +250,10 @@ public class Main {
         while (!queue.isEmpty()) {
 
             Element element = queue.poll();
-            if (!visit(visited, element) || element.getCount() == 10) {
+            if (element.getCount() == 10) {
+                break;
+            }
+            if (!visit(visited, element)) {
                 continue;
             }
 
