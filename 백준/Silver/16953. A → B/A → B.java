@@ -84,7 +84,7 @@ public class Main {
         int startNumber = reader.nextInt();
         int endNumber = reader.nextInt();
 
-        int result = bfs(startNumber, endNumber);
+        int result = action(startNumber, endNumber);
 
         printResult(result);
 
@@ -92,26 +92,21 @@ public class Main {
         close();
     }
 
-    private static int bfs(int startNumber, int endNumber) {
-        Queue<long[]> queue = new LinkedList<>();
-        queue.add(new long[]{startNumber, 1});
-
-        boolean[] visited = new boolean[endNumber];
-        while (!queue.isEmpty()) {
-            long[] element = queue.poll();
-            long number = element[0];
-            long count = element[1];
-            if (number == endNumber) {
-                return (int) count;
+    private static int action(int startNumber, int endNumber) {
+        int result = 1;
+        int currentNumber = endNumber;
+        while (currentNumber > startNumber) {
+            if (currentNumber % 2 == 0) {
+                currentNumber /= 2;
+            } else if (currentNumber % 10 == 1) {
+                currentNumber = currentNumber-- / 10;
+            } else {
+                return -1;
             }
-
-            if (number > endNumber || visited[(int) number]) {
-                continue;
-            }
-
-            long nextCount = count + 1;
-            queue.add(new long[]{number * 2, nextCount});
-            queue.add(new long[]{number * 10 + 1, nextCount});
+            result++;
+        }
+        if (currentNumber == startNumber) {
+            return result;
         }
         return -1;
     }
