@@ -87,9 +87,7 @@ public class Main {
         boolean[] firstClickStates = startStates.clone();
         click(firstClickStates, 0);
         int result1 = action(firstClickStates, endStates);
-        if (result1 != -1) {
-            result1++;
-        }
+        result1 = result1 != -1 ? result1 + 1 : -1;
 
         boolean[] firstNotClickStates = startStates.clone();
         int result2 = action(firstNotClickStates, endStates);
@@ -153,14 +151,18 @@ public class Main {
     }
 
     private static void printResult(int result1, int result2) {
-        int result = Math.min(result1, result2);
-        if (result == -1) {
-            result = result1;
-            if (result1 == -1) {
-                result = result2;
-            }
-        }
+        int result = getResult(result1, result2);
         writer.print(String.valueOf(result));
+    }
+
+    private static int getResult(int result1, int result2) {
+        if (result1 == -1) {
+            return result2;
+        }
+        if (result2 == -1) {
+            return result1;
+        }
+        return Math.min(result1, result2);
     }
 
     private static void close() {
