@@ -52,26 +52,15 @@ public class Main {
         if (rowSize == row) {
             result = 0;
             for (int col = 0; col < colSize; col++) {
-                result += countTrueInColumn(map, col);
+                int currentCount = countTrueInColumn(map, col);
+                result += Math.min(currentCount, colSize - currentCount);
             }
+
             return result;
         }
 
-        for (int col = 0; col < colSize; col++) {
-            int trueCount = countTrueInColumn(map, col);
-            if (trueCount > rowSize / 2) {
-                flipCoinInColumn(map, col);
-            }
-        }
         result = Math.min(result, rowDfs(map, row + 1));
-
         flipCoinInRow(map, row);
-        for (int col = 0; col < colSize; col++) {
-            int trueCount = countTrueInColumn(map, col);
-            if (trueCount > rowSize / 2) {
-                flipCoinInColumn(map, col);
-            }
-        }
         result = Math.min(result, rowDfs(map, row + 1));
         return result;
     }
