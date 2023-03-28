@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -47,24 +46,24 @@ public class Main {
 
     private static int rowDfs(boolean[][] map, int row) {
         int rowSize = map.length;
+        int colSize = map[0].length;
+
+        int result = Integer.MAX_VALUE;
         if (rowSize == row) {
-            return Integer.MAX_VALUE;
+            result = 0;
+            for (int col = 0; col < colSize; col++) {
+                result += countTrueInColumn(map, col);
+            }
+            return result;
         }
 
-        int colSize = map[0].length;
         for (int col = 0; col < colSize; col++) {
             int trueCount = countTrueInColumn(map, col);
             if (trueCount > rowSize / 2) {
                 flipCoinInColumn(map, col);
             }
         }
-
-        int result1 = 0;
-        for (int col = 0; col < colSize; col++) {
-            result1 += countTrueInColumn(map, col);
-        }
-
-        result1 = Math.min(result1, rowDfs(map, row + 1));
+        result = Math.min(result, rowDfs(map, row + 1));
 
         flipCoinInRow(map, row);
         for (int col = 0; col < colSize; col++) {
@@ -73,15 +72,10 @@ public class Main {
                 flipCoinInColumn(map, col);
             }
         }
-        int result2 = 0;
-        for (int col = 0; col < colSize; col++) {
-            result2 += countTrueInColumn(map, col);
-        }
-
-        result2 = Math.min(result2, rowDfs(map, row + 1));
-
-        return Math.min(result1, result2);
+        result = Math.min(result, rowDfs(map, row + 1));
+        return result;
     }
+
     private static int countTrueInColumn(boolean[][] map, int col) {
         int count = 0;
         for (int row = 0; row < map.length; row++) {
@@ -94,13 +88,13 @@ public class Main {
 
     private static void flipCoinInColumn(boolean[][] map, int col) {
         for (int row = 0; row < map.length; row++) {
-            map[row][col] = map[row][col] == true ? false : true;
+            map[row][col] = !map[row][col];
         }
     }
 
     private static void flipCoinInRow(boolean[][] map, int row) {
         for (int col = 0; col < map[row].length; col++) {
-            map[row][col] = map[row][col] == true ? false : true;
+            map[row][col] = !map[row][col];
         }
     }
 
