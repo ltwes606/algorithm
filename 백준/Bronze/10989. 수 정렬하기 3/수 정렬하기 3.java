@@ -5,11 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -35,13 +30,14 @@ public class Main {
 
     private static void printResult(int[] result) {
         for (int i = 0; i < result.length; i++) {
-            printRepeatedly(i, result[i]);
-        }
-    }
+            int count = result[i];
+            if (count == 0) {
+                continue;
+            }
 
-    private static void printRepeatedly(int number, int count) {
-        for (int i = 0; i < count; i++) {
-            writer.println(String.valueOf(number));
+            writer.print(
+                    (i + "\n").repeat(count)
+            );
         }
     }
 
