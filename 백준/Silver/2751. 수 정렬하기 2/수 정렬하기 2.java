@@ -19,31 +19,19 @@ public class Main {
 
         // 입력
         int size = reader.nextInt();
-        boolean[] positiveVisited = new boolean[MAX_VALUE + 1];
-        boolean[] negativeVisited = new boolean[MAX_VALUE + 1];
+        boolean[] visited = new boolean[MAX_VALUE * 2 + 1];
         for (int i = 0; i < size; i++) {
-            int inputNumber = reader.nextInt();
-            if (inputNumber < 0) {
-                negativeVisited[-inputNumber] = true;
-                continue;
-            }
-            positiveVisited[inputNumber] = true;
+            visited[reader.nextInt() + MAX_VALUE] = true;
         }
 
-        printResult(negativeVisited, positiveVisited);
+        printResult(visited);
         close();
     }
 
-    private static void printResult(boolean[] negative, boolean[] positive) {
-        for (int n = MAX_VALUE; n >= 0; n--) {
-            if (negative[n]) {
-                writer.println(String.valueOf(-n));
-            }
-        }
-        
-        for (int n = 0; n < positive.length; n++) {
-            if (positive[n]) {
-                writer.println(String.valueOf(n));
+    private static void printResult(boolean[] result) {
+        for (int n = 0; n < result.length; n++) {
+            if (result[n]) {
+                writer.println(String.valueOf(n - MAX_VALUE));
             }
         }
     }
