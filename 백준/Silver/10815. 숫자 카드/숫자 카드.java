@@ -17,10 +17,6 @@ public class Main {
     private static TokenizerReader reader;
     private static BuilderWriter writer;
 
-    public static final int BLANK = 0;
-    public static final int WALL = 1;
-    public static final int VIRUS = 2;
-
     public static void main(String[] args) {
         reader = new TokenizerReader(System.in);
         writer = new BuilderWriter(System.out);
