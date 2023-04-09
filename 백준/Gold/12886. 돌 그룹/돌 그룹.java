@@ -24,7 +24,10 @@ public class Main {
         int B = reader.nextInt();
         int C = reader.nextInt();
 
-        int result = bfs(A, B, C);
+        int result = 0;
+        if ((A + B + C) % 3 == 0) {
+            result = bfs(A, B, C);
+        }
 
         printResult(result);
         close();
