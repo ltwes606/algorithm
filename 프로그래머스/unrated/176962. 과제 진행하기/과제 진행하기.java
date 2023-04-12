@@ -1,8 +1,8 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Stack;
 
 public class Solution {
 
@@ -43,7 +43,7 @@ public class Solution {
 
     private static String[] run(Plan[] plans) {
         Queue<Plan> runningQueue = createRunningQueue(plans);
-        LinkedList<Object[]> blockedDeque = new LinkedList<>();
+        Stack<Object[]> blockedStack = new Stack<>();
 
         List<Plan> result = new ArrayList<>();
         while (!runningQueue.isEmpty()) {
@@ -60,14 +60,14 @@ public class Solution {
 
             if (remainingPlaytime >= 0) {
                 result.add(plan);
-                performBlockedQueue(blockedDeque, remainingPlaytime, result);
+                performBlockedStack(blockedStack, remainingPlaytime, result);
                 continue;
             }
-            blockedDeque.addFirst(new Object[]{plan, -remainingPlaytime});
+            blockedStack.push(new Object[]{plan, -remainingPlaytime});
         }
 
-        while (!blockedDeque.isEmpty()) {
-            result.add((Plan) blockedDeque.removeFirst()[0]);
+        while (!blockedStack.isEmpty()) {
+            result.add((Plan) blockedStack.pop()[0]);
         }
 
         return result.stream().map(p -> p.getName()).toArray(String[]::new);
@@ -81,16 +81,16 @@ public class Solution {
         return runningQueue;
     }
 
-    private static void performBlockedQueue(LinkedList<Object[]> blockedDeque,
+    private static void performBlockedStack(Stack<Object[]> blockedDeque,
             int remainingPlaytime,
             List<Plan> result) {
         while (remainingPlaytime != 0 && !blockedDeque.isEmpty()) {
-            Object[] element = blockedDeque.poll();
+            Object[] element = blockedDeque.pop();
             Plan plan = (Plan) element[0];
             int currentPlaytime = (int) element[1];
 
             if (remainingPlaytime < currentPlaytime) {
-                blockedDeque.addFirst(new Object[]{plan, currentPlaytime - remainingPlaytime});
+                blockedDeque.push(new Object[]{plan, currentPlaytime - remainingPlaytime});
                 return;
             }
             remainingPlaytime -= currentPlaytime;
