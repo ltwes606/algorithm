@@ -11,7 +11,7 @@ class Solution {
         }
         int smallerIdx = 0;
         int result = 0;
-        while(biggerIdx <= n && biggerIdx >= smallerIdx) {
+        while(biggerIdx <= n) {
             int value = dp[biggerIdx] - dp[smallerIdx];
             if (value == n) {
                 result++;
