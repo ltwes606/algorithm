@@ -2,21 +2,14 @@ class Solution {
     public int[] solution(int brown, int yellow) {
         int[] result = new int[2];
         
-        int colSize = 0;
         int sum = brown + yellow;
-        while (true) {
+        int colSize = 1;
+        while (!balance(brown, yellow, sum / colSize, colSize)) {
             colSize++;
-            int rowSize = sum / colSize;
-            if (rowSize * colSize != sum) {
-                continue;
-            }
-            
-            if (balance(brown, yellow, rowSize, colSize)) {
-                result[0] = rowSize;
-                result[1] = colSize;
-                break;
-            }
         }
+        
+        result[0] = sum / colSize;
+        result[1] = colSize;
         return result;
     }
     
