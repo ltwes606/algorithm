@@ -18,9 +18,9 @@ class Solution {
 
     private static void sort(String[] strings) {
         Arrays.sort(strings, (str1, str2) -> {
-                    String repeatedStr1 = str1.repeat(str2.length());
-                    String repeatedStr2 = str2.repeat(str1.length());
-                    return repeatedStr2.compareTo(repeatedStr1);
+                    String firstStr1 = str1 + str2;
+                    String firstStr2 = str2 + str1;
+                    return firstStr2.compareTo(firstStr1);
                 }
         );
     }
